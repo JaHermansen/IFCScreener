@@ -45,7 +45,7 @@ def main():
 
     st.set_page_config(
         layout="wide",
-        page_title="PAA IFC Screener",
+        page_title="IFC Screener",
         page_icon=icon,
     )
     st.markdown("<h1 style='color: #006095;'>PAA IFC Screener</h1>", unsafe_allow_html=True)
