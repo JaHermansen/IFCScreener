@@ -18,7 +18,7 @@ icon = Image.open('paa1.png')
 
 st.set_page_config(
     layout= "wide",
-    page_title= "PAA IFC Screener",
+    page_title= "IFC Screener",
     page_icon= icon,
 )
 
@@ -238,7 +238,7 @@ def compare_datasets(df1, df2, identifier_column):
 
 
 def execute():
-    st.markdown("<h1 style='color: #006095;'>PAA Model Quantities</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color: #006095;'>Model Quantities</h1>", unsafe_allow_html=True)
     if st.session_state.get("ifc_file") is None:
         st.warning("No file provided. Please upload a file.")
     else:
@@ -304,7 +304,7 @@ def execute():
 
 
         with tab3:
-            st.header("PAA BIMTypeCodes")
+            st.header("Create BIMTypeCodes")
 
             col1, col2 = st.columns(2)
 
