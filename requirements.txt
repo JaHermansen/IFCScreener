@@ -2,3 +2,4 @@ ifcopenshell
 plotly
 pillow
 streamlit
+matplotlib
