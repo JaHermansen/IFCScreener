@@ -48,7 +48,7 @@ def main():
         page_title="IFC Screener",
         page_icon=icon,
     )
-    st.markdown("<h1 style='color: #006095;'>PAA IFC Screener</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color: #006095;'>IFC Screener</h1>", unsafe_allow_html=True)
     st.markdown("### Click on Browse File in the Side Bar to start")
     uploaded_file = st.sidebar.file_uploader("Choose a file", key="uploaded_file", on_change=callback_upload)
     if st.sidebar.button("Remove File"):
