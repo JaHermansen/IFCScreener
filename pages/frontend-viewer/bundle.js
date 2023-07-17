@@ -36169,8 +36169,8 @@ var IfcAPI = class {
   OpenModel(data, settings) {
     this.wasmModule["FS_createDataFile"]("/", "filename", data, true, true, true);
     let s = __spreadValues({
-      COORDINATE_TO_ORIGIN: false,
-      USE_FAST_BOOLS: false,
+      COORDINATE_TO_ORIGIN: true,
+      USE_FAST_BOOLS: true,
       CIRCLE_SEGMENTS_LOW: 5,
       CIRCLE_SEGMENTS_MEDIUM: 8,
       CIRCLE_SEGMENTS_HIGH: 12

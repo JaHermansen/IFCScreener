@@ -7,6 +7,7 @@ from tools import graph_maker
 import pandas as pd
 from PIL import Image
 import ifcopenshell
+import ifcopenshell.util.element as Element
 import random
 import os
 from datetime import date
@@ -74,23 +75,23 @@ def callback_upload():
 
 def update_properties(bim_type_codes_selected):
 
-    
     owner_history = session.ifc_file.by_type("IfcOwnerHistory")[0]
     products = session.ifc_file.by_type("IfcProduct")
-    procs = []
-    for i in products:
-        if i.is_a("IfcProduct"):
-            procs.append(i)
+    procs = [i for i in products if i.is_a("IfcProduct")]
 
     for proc in procs:
-        pset = ifcopenshell.util.element.get_psets(proc, psets_only=True)
+        property_sets = ifcopenshell.util.element.get_psets(proc)
         property_values = []
         for bim_type_code in bim_type_codes_selected:
             pset_value = None
-            for pset_name, pset_values in pset.items():
-                if bim_type_code in pset_name:
-                    pset_value = pset_values.get("Value")
+            for pset_name, properties in property_sets.items():
+                for prop_name, prop_values in properties.items():
+                    if bim_type_code in prop_name:
+                        pset_value = prop_values
+                        break
+                if pset_value is not None:
                     break
+
             if pset_value is not None:
                 property_values.append(
                     session.ifc_file.createIfcPropertySingleValue(
@@ -100,7 +101,7 @@ def update_properties(bim_type_codes_selected):
             else:
                 property_values.append(
                     session.ifc_file.createIfcPropertySingleValue(
-                        bim_type_code, bim_type_code, session.ifc_file.create_entity("IfcText", "Test"), None
+                        bim_type_code, bim_type_code, session.ifc_file.create_entity("IfcText", "Not Available"), None
                     )
                 )
         property_set = session.ifc_file.createIfcPropertySet(proc.GlobalId, owner_history, "Pset_PAABIMTypeCodes", None, property_values)
@@ -112,8 +113,129 @@ def update_properties(bim_type_codes_selected):
     session.ifc_file.write(updated_file_path)
 
 
+def add_new_properties(new_properties_dict):
+    owner_history = session.ifc_file.by_type("IfcOwnerHistory")[0]
+    products = session.ifc_file.by_type("IfcProduct")
+    procs = [i for i in products if i.is_a("IfcProduct")]
 
-    ###
+    for proc in procs:
+        identifier = proc.GlobalId  # Get the GlobalId of the current product
+
+        # Check if the property set already exists
+        existing_property_set = None
+        for rel_defines in proc.IsDefinedBy:
+            if rel_defines.is_a("IfcRelDefinesByProperties"):
+                rel_defines_property_set = rel_defines.RelatingPropertyDefinition
+                if rel_defines_property_set.Name == "Pset_PAABIMTypeCodes":
+                    existing_property_set = rel_defines_property_set
+                    break
+
+        if existing_property_set:
+            # Add new properties and values to the existing property set
+            if identifier in new_properties_dict:
+                element_properties = new_properties_dict[identifier]
+                for col, values in element_properties.items():
+                    if "." in col:
+                        property_set_name, property_name = col.split(".", 1)
+                        property_value = session.ifc_file.createIfcPropertySingleValue(
+                            property_name, property_name, session.ifc_file.create_entity("IfcText", str(values[0])), None
+                        )
+                        for rel_defines in proc.IsDefinedBy:
+                            if (
+                                rel_defines.is_a("IfcRelDefinesByProperties")
+                                and rel_defines.RelatingPropertyDefinition.Name == property_set_name
+                            ):
+                                rel_defines.RelatingPropertyDefinition.HasProperties += (property_value,)
+                    else:
+                        for value in values:
+                            property_value = session.ifc_file.createIfcPropertySingleValue(
+                                col, col, session.ifc_file.create_entity("IfcText", str(value)), None
+                            )
+                            existing_property_set.HasProperties += (property_value,)
+
+        else:
+            # Create new property sets based on column names
+            if identifier in new_properties_dict:
+                element_properties = new_properties_dict[identifier]
+                for col, values in element_properties.items():
+                    if "." in col:
+                        property_set_name, property_name = col.split(".", 1)
+                        property_values = [
+                            session.ifc_file.createIfcPropertySingleValue(
+                                property_name, property_name, session.ifc_file.create_entity("IfcText", str(value)), None
+                            )
+                            for value in values
+                        ]
+                        property_set = session.ifc_file.createIfcPropertySet(
+                            identifier, owner_history, property_set_name, None, property_values
+                        )
+                        session.ifc_file.createIfcRelDefinesByProperties(identifier, owner_history, None, None, [proc], property_set)
+                    else:
+                        property_values = [
+                            session.ifc_file.createIfcPropertySingleValue(
+                                col, col, session.ifc_file.create_entity("IfcText", str(value)), None
+                            )
+                            for value in values
+                        ]
+                        property_set = session.ifc_file.createIfcPropertySet(
+                            identifier, owner_history, "Pset_PAABIMTypeCodes", None, property_values
+                        )
+                        session.ifc_file.createIfcRelDefinesByProperties(identifier, owner_history, None, None, [proc], property_set)
+
+    # Write the modified IFC file to the Downloads folder
+    downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
+    updated_file_path = os.path.join(downloads_path, updated_file_name)
+    session.ifc_file.write(updated_file_path)
+
+
+
+
+
+
+
+def find_sheet_with_class(sheet_names, ifc_building_element, file):
+    for sheet_name in sheet_names:
+        df_sheet = pd.read_excel(file, sheet_name)
+        global_ids = df_sheet["GlobalId"].tolist()
+
+        if ifc_building_element.GlobalId in global_ids:
+            return sheet_name
+
+    return None
+    
+def read_data_from_excel(df, sheet_name, global_id_column):
+    # Read the sheet with the specified name
+    sheet = pd.read_excel(df, sheet_name)
+
+    # Read the IfcBuildingElement objects from the sheet
+    ifc_building_elements = session.ifc_file.by_type("IfcBuildingElement")
+
+    # Create a dictionary to store the associated rows of data
+    data_dict = {}
+
+    # Iterate over each object in IfcBuildingElement class
+    for element in ifc_building_elements:
+        global_id = element.GlobalId
+
+        # Find the row in the sheet with the matching GlobalId
+        row = sheet[sheet[global_id_column] == global_id]
+
+        # If a matching row is found, store it in the data dictionary
+        if not row.empty:
+            data_dict[global_id] = row.iloc[0]
+
+    return data_dict
+
+def find_row_with_global_id(df_sheet, global_id):
+    row = df_sheet[df_sheet["GlobalId"] == global_id]
+    return row.iloc[0] if not row.empty else None
+
+def compare_datasets(df1, df2, identifier_column):
+    df1_columns = set(df1.columns)
+    df2_columns = set(df2.columns)
+    new_columns = df1_columns - df2_columns - {identifier_column}
+    return new_columns
+
 
 def execute():
     st.markdown("<h1 style='color: #006095;'>PAA Model Quantities</h1>", unsafe_allow_html=True)
@@ -140,30 +262,30 @@ def execute():
 
             st.write(get_ifc_pandas_filter(class_selectorfilter))
             
-
-            
-
-            
+                    
         
         with tab2:
             col1, col2 = st.columns(2)
             with col1:
                 st.write("Options")
-                classes = session.DataFrame["Class"].value_counts().keys().to_list()
+                classes = session.DataFrame["Class"].value_counts().keys().tolist()
                 class_selector = st.selectbox("Select Class", options=classes or [], key="class_selector")
                 
                 session["filtered_frame"] = pandashelper.filter_dataframe_per_class(session.DataFrame, session.class_selector)
-                #st.write(session["filtered_frame"])
-                session["qtos"] = pandashelper.get_qsets_columns(session["filtered_frame"])
+                # st.write(session["filtered_frame"])
+                
+                software_types = ["RevitQuantities", "Tekla Quantity", "BaseQuantitiy"]
+                session["qtos"] = pandashelper.get_qsets_columns(session["filtered_frame"], "RevitQuantities", "Tekla Quantity", "BaseQuantitiy")
+
                 
                 if session["qtos"] is not None:
-                        qto_selector = st.selectbox("Select Quantity Set", session.qtos, key='qto_selector')
-                        quantities = pandashelper.get_quantities(session.filtered_frame, session.qto_selector)
-                        st.selectbox("Select Quantity", quantities, key="quantity_selector")
-                        st.radio('Split per', ['Level', 'Type'], key="split_options")
+                    qto_selector = st.selectbox("Select Quantity Set", session.qtos, key='qto_selector')
+                    quantities = pandashelper.get_quantities(session.filtered_frame, session.qto_selector)
+                    st.selectbox("Select Quantity", quantities, key="quantity_selector")
+                    st.radio('Split per', ['Level', 'Type'], key="split_options")
                 else:
                     st.warning("No quantities ~ ask your file issuer to export some")
-                #st.write(session["qtos"])
+                # st.write(session["qtos"])
             with col2:
                 st.write("Graph")
                 if "quantity_selector" in session:
@@ -193,7 +315,7 @@ def execute():
                     "TypeCode",
                     "TypeNumber",
                     "TypeID",
-                    "TypeCode-Description",
+                    "TypeDescription",
                     "Typetekst"
                 ]
                 bim_type_codes_selected = []
@@ -219,17 +341,67 @@ def execute():
             st.write(session["DataFrame"])
 
 
+        # ...
+
         with tab4:
             st.header("Upload data to model")
-            st.write("upload data")
 
             file = st.file_uploader("Upload file", type=['csv', 'xlsx', 'pickle'])
-            if not file:
-                st.write("Upload a .csv or .xlsx file to get started")
-            else:  # only proceed if a file is uploaded
-                get_df(file)
-                explore()
 
+            if not file:
+                st.write("Upload a .csv, .xlsx, or .pickle file to get started")
+            else:
+                if file.type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                    xls = pd.ExcelFile(file)
+                    sheet_names = xls.sheet_names
+
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        data_preview = pd.DataFrame()
+                        for sheet_name in sheet_names:
+                            df_sheet = pd.read_excel(file, sheet_name)
+                            data_preview = pd.concat([data_preview, df_sheet])
+
+                        st.markdown("Data from uploaded file")
+                        st.write(data_preview)
+
+                        identifier_column = "GlobalId"
+                        group_column = "Class"
+                        new_columns = compare_datasets(data_preview, session["DataFrame"], identifier_column)
+
+                        if not list(new_columns):
+                            st.warning("No new columns found in the uploaded file.")
+                        else:
+                            # Store new properties for property creation
+                            new_properties_dict = {}  # Dictionary to store properties by GlobalId
+
+                            grouped_properties = data_preview.groupby([group_column, identifier_column])
+
+                            for (class_value, element), properties in grouped_properties:
+                                new_properties = properties[list(new_columns)].dropna(how="all", axis=1)
+                                if not new_properties.empty:
+                                    new_properties_dict[element] = new_properties.to_dict("list")
+
+                                    st.warning(f"IfcBuildingElement: {element} | Class: {class_value}")
+                                    for col in new_properties.columns:
+                                        values = new_properties[col].dropna().unique()
+                                        for value in values:
+                                            st.info(f"{col}: {value}")
+
+                    
+                    
+                    with col2:
+                        if not list(new_columns):
+                            st.info("No new properties found in the uploaded file.")
+                        else:
+                            button_text = "Add New Properties"
+
+                            if st.button(button_text):
+                                # Logic to handle the button click and add new properties
+                                add_new_properties(new_properties_dict)  # Call the function to add new properties
+
+                                st.success("New properties added successfully.")
 
 
 

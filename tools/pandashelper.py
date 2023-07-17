@@ -9,10 +9,11 @@ def get_total(dataframe):
     count = dataframe[CLASS].value_counts().sum()
     return count
 
-def get_qsets_columns(dataframe):
+def get_qsets_columns(dataframe, *software_types):
     qset_columns = set()
-    [qset_columns.add(column.split(".", 1)[0]) for column in dataframe.columns if "Qto" in column]
+    [qset_columns.add(column.split(".", 1)[0]) for column in dataframe.columns if any(software_type in column for software_type in software_types)]
     return list(qset_columns) if qset_columns else None
+
 
 def get_quantities(frame, quantity_set):
     columns = []
@@ -24,10 +25,13 @@ def download_csv(file_name, dataframe):
     file_name = file_name.replace('.ifc', '.csv')
     dataframe.to_csv(f'./downloads/{file_name}')
 
+
 def download_excel(file_name, dataframe):
+        
     import os
     from pathlib import Path
-    import pandas
+    import pandas as pd
+    import xlsxwriter
     file_name = file_name.replace('.ifc', '.xlsx')
 
     # Getting user's home directory and appending 'Downloads'
@@ -37,8 +41,20 @@ def download_excel(file_name, dataframe):
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
-    writer = pandas.ExcelWriter(os.path.join(dir_name, file_name), engine="xlsxwriter") 
+    writer = pd.ExcelWriter(os.path.join(dir_name, file_name), engine="xlsxwriter") 
+
     for object_class in dataframe[CLASS].unique():
         df_class = dataframe[dataframe[CLASS] == object_class].dropna(axis=1, how="all")
-        df_class.to_excel(writer, sheet_name=object_class)
-    writer.close() # Use close instead of save
+
+        df_class.to_excel(writer, sheet_name=object_class, index=False)
+        worksheet = writer.sheets[object_class]  # pull worksheet object
+
+        for idx, col in enumerate(df_class):  # loop through all columns
+            series = df_class[col]
+            if "PAA" in col:
+                format = writer.book.add_format({'bg_color': '#ADD8E6'})  # define custom format (green fill color in this case)
+                # Create the cell range for the column
+                cell_range = xlsxwriter.utility.xl_range(1, idx, len(series), idx)
+                worksheet.conditional_format(cell_range, {'type': 'no_blanks', 'format': format})
+
+    writer.close()

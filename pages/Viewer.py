@@ -32,7 +32,7 @@ def draw_3d_viewer():
     def get_current_ifc_file():
         return session.array_buffer
     session.ifc_js_response = ifc_js_viewer(get_current_ifc_file())
-    st.sidebar.success("Visualiser loaded")
+    st.sidebar.success("Model loaded")
 
 def get_psets_from_ifc_js():
     if session.ifc_js_response:
@@ -192,7 +192,7 @@ def viewer():
         page_title="PAA IFC Screener",
         page_icon=icon,
     )
-    st.markdown("<h1 style='color: #006095;'>IFC.js Viewer</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color: #006095;'>Model Viewer</h1>", unsafe_allow_html=True)
     if "ifc_file" in session and session["ifc_file"]:
         if "ifc_js_response" not in session:
             session["ifc_js_response"] = ""
@@ -210,7 +210,7 @@ def viewer():
     
 def execute():
     initialise_debug_props()
-    st.header("IFC.js Viewer")
+    st.header("Model Viewer")
     if "ifc_file" in session and session["ifc_file"]:
         if "ifc_js_response" not in session:
             session["ifc_js_response"] = ""

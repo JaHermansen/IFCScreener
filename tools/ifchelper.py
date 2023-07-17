@@ -162,7 +162,9 @@ def get_task_data(tasks):
         } for task in tasks
     ]
 
-def format_ifcjs_psets(ifcJSON):
+
+
+def format_ifcjs_psets1(ifcJSON):
     """
     Organise pset data from web-ifc-api response
     """
@@ -220,3 +222,49 @@ def format_ifcjs_psets(ifcJSON):
                     "Value": property_value
                 })
     return dict
+
+
+def format_ifcjs_psets(ifcJSON):
+    """
+    Organise pset data from web-ifc-api response
+    """
+    pset_dict= {}
+    for pset in ifcJSON:
+        if "BIM7AA." in pset["Name"]["value"]:
+            print(pset)  # print the pset for debugging
+
+        if "Quantities" in pset:
+            for quantity in pset["Quantities"]:
+                quantity_name = quantity["Name"]["value"]
+                quantity_value = ""
+                for key in quantity.keys():
+                    if "Value" in key:
+                        quantity_value = quantity[key]["value"]
+                if pset["expressID"] not in pset_dict:
+                    pset_dict[pset["expressID"]] = {
+                        "Name":pset["Name"]["value"], 
+                        "Data":[]
+                    }
+                pset_dict[pset["expressID"]]["Data"].append({
+                    "Name": quantity_name,
+                    "Value": quantity_value
+                })
+        if "HasProperties" in pset:
+            for property in pset["HasProperties"]:
+                property_name = property["Name"]["value"]
+                property_value = ""
+                for key in property.keys():
+                    if "Value" in key:
+                        property_value = property[key]["value"]
+                if pset["expressID"] not in pset_dict:
+                    pset_dict[pset["expressID"]] = {
+                        "Name":pset["Name"]["value"], 
+                        "Data":[]
+                    }
+                pset_dict[pset["expressID"]]["Data"].append({
+                    "Name": property_name,
+                    "Value": property_value
+                })
+
+
+    return pset_dict

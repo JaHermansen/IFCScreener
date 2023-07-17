@@ -59,8 +59,8 @@ def main():
         #st.sidebar.write("You may now reload a new file")
     if st.session_state["file_name"] != "":
         st.write(f'Start Exploring "{get_project_name()}"')
-    st.markdown("### Model Statistics")
-    draw_model_health_ui()
+        st.markdown("### Model Statistics")
+        draw_model_health_ui()
 
 
 if __name__ == "__main__":
