@@ -189,10 +189,10 @@ def viewer():
     initialise_debug_props()
     st.set_page_config(
         layout="wide",
-        page_title="PAA IFC Screener",
+        page_title="IFC Screener",
         page_icon=icon,
     )
-    st.markdown("<h1 style='color: #006095;'>Model Viewer</h1>", unsafe_allow_html=True)
+    #st.markdown("<h1 style='color: #006095;'>Viewer</h1>", unsafe_allow_html=True)
     if "ifc_file" in session and session["ifc_file"]:
         if "ifc_js_response" not in session:
             session["ifc_js_response"] = ""

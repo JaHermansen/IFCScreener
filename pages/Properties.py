@@ -8,17 +8,16 @@ import pandas as pd
 from PIL import Image
 import ifcopenshell
 import ifcopenshell.util.element as Element
-import random
 import os
 from datetime import date
-import re
+
 
 #Page icon
 icon = Image.open('paa1.png')
 
 st.set_page_config(
     layout= "wide",
-    page_title= "PAA IFC Screener",
+    page_title= "IFC Screener",
     page_icon= icon,
 )
 
@@ -112,7 +111,6 @@ def update_properties(bim_type_codes_selected):
     updated_file_path = os.path.join(downloads_path, updated_file_name)
     session.ifc_file.write(updated_file_path)
 
-
 def add_new_properties(new_properties_dict):
     owner_history = session.ifc_file.by_type("IfcOwnerHistory")[0]
     products = session.ifc_file.by_type("IfcProduct")
@@ -121,77 +119,31 @@ def add_new_properties(new_properties_dict):
     for proc in procs:
         identifier = proc.GlobalId  # Get the GlobalId of the current product
 
-        # Check if the property set already exists
-        existing_property_set = None
-        for rel_defines in proc.IsDefinedBy:
-            if rel_defines.is_a("IfcRelDefinesByProperties"):
-                rel_defines_property_set = rel_defines.RelatingPropertyDefinition
-                if rel_defines_property_set.Name == "Pset_PAABIMTypeCodes":
-                    existing_property_set = rel_defines_property_set
-                    break
+        if identifier in new_properties_dict:
+            element_properties = new_properties_dict[identifier]
+            property_values = []
+            for col, values in element_properties.items():
+                if "." in col:
+                    property_set_name, property_name = col.split(".", 1)
+                else:
+                    property_set_name = col
+                    property_name = col
+                property_values.extend(
+                    session.ifc_file.createIfcPropertySingleValue(
+                        property_name, property_name, session.ifc_file.create_entity("IfcText", str(value)), None
+                    )
+                    for value in values
+                )
 
-        if existing_property_set:
-            # Add new properties and values to the existing property set
-            if identifier in new_properties_dict:
-                element_properties = new_properties_dict[identifier]
-                for col, values in element_properties.items():
-                    if "." in col:
-                        property_set_name, property_name = col.split(".", 1)
-                        property_value = session.ifc_file.createIfcPropertySingleValue(
-                            property_name, property_name, session.ifc_file.create_entity("IfcText", str(values[0])), None
-                        )
-                        for rel_defines in proc.IsDefinedBy:
-                            if (
-                                rel_defines.is_a("IfcRelDefinesByProperties")
-                                and rel_defines.RelatingPropertyDefinition.Name == property_set_name
-                            ):
-                                rel_defines.RelatingPropertyDefinition.HasProperties += (property_value,)
-                    else:
-                        for value in values:
-                            property_value = session.ifc_file.createIfcPropertySingleValue(
-                                col, col, session.ifc_file.create_entity("IfcText", str(value)), None
-                            )
-                            existing_property_set.HasProperties += (property_value,)
-
-        else:
-            # Create new property sets based on column names
-            if identifier in new_properties_dict:
-                element_properties = new_properties_dict[identifier]
-                for col, values in element_properties.items():
-                    if "." in col:
-                        property_set_name, property_name = col.split(".", 1)
-                        property_values = [
-                            session.ifc_file.createIfcPropertySingleValue(
-                                property_name, property_name, session.ifc_file.create_entity("IfcText", str(value)), None
-                            )
-                            for value in values
-                        ]
-                        property_set = session.ifc_file.createIfcPropertySet(
-                            identifier, owner_history, property_set_name, None, property_values
-                        )
-                        session.ifc_file.createIfcRelDefinesByProperties(identifier, owner_history, None, None, [proc], property_set)
-                    else:
-                        property_values = [
-                            session.ifc_file.createIfcPropertySingleValue(
-                                col, col, session.ifc_file.create_entity("IfcText", str(value)), None
-                            )
-                            for value in values
-                        ]
-                        property_set = session.ifc_file.createIfcPropertySet(
-                            identifier, owner_history, "Pset_PAABIMTypeCodes", None, property_values
-                        )
-                        session.ifc_file.createIfcRelDefinesByProperties(identifier, owner_history, None, None, [proc], property_set)
+            property_set = session.ifc_file.createIfcPropertySet(
+                identifier, owner_history, property_set_name, None, property_values
+            )
+            session.ifc_file.createIfcRelDefinesByProperties(identifier, owner_history, None, None, [proc], property_set)
 
     # Write the modified IFC file to the Downloads folder
     downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
     updated_file_path = os.path.join(downloads_path, updated_file_name)
     session.ifc_file.write(updated_file_path)
-
-
-
-
-
-
 
 def find_sheet_with_class(sheet_names, ifc_building_element, file):
     for sheet_name in sheet_names:
@@ -243,7 +195,7 @@ def execute():
         st.warning("No file provided. Please upload a file.")
     else:
         
-        tab1, tab2, tab3, tab4 = st.tabs(["Dataframe Utilities", "Quantities Review", "PAA Properties", "Add External Data"])
+        tab1, tab2, tab3, tab4 = st.tabs(["Dataframe Utilities", "Quantities Review", "BIMTypeCodes", "Add External Data"])
         
         with tab1:
 
@@ -254,7 +206,10 @@ def execute():
             st.write(session["DataFrame"])
 
             #st.button("Download CSV", key="download_csv", on_click=download_csv)
-            st.button("Download Excel", key="download_excel", on_click=download_excel)
+            write_button = st.button("Download Excel", key="download_excel", on_click=download_excel)
+            if write_button:
+                st.success("Excel file creation completed!")
+                st.warning("Check your download folder")
 
             st.header("Filter by class")
             classesfilter = session.DataFrame["Class"].value_counts().keys().to_list()
@@ -267,14 +222,14 @@ def execute():
         with tab2:
             col1, col2 = st.columns(2)
             with col1:
-                st.write("Options")
+                st.markdown("#### Options")
                 classes = session.DataFrame["Class"].value_counts().keys().tolist()
                 class_selector = st.selectbox("Select Class", options=classes or [], key="class_selector")
                 
                 session["filtered_frame"] = pandashelper.filter_dataframe_per_class(session.DataFrame, session.class_selector)
-                # st.write(session["filtered_frame"])
                 
-                software_types = ["RevitQuantities", "Tekla Quantity", "BaseQuantitiy"]
+                
+                
                 session["qtos"] = pandashelper.get_qsets_columns(session["filtered_frame"], "RevitQuantities", "Tekla Quantity", "BaseQuantitiy")
 
                 
@@ -287,7 +242,7 @@ def execute():
                     st.warning("No quantities ~ ask your file issuer to export some")
                 # st.write(session["qtos"])
             with col2:
-                st.write("Graph")
+                st.markdown("#### Graph")
                 if "quantity_selector" in session:
                     if session.quantity_selector == "Count":
                         total = pandashelper.get_total(session["filtered_frame"])
@@ -309,7 +264,7 @@ def execute():
             col1, col2 = st.columns(2)
 
             with col1:
-                st.write("Specify BIMTypeCodes:")
+                st.markdown("#### Specify BIMTypeCodes")
                 bim_type_codes = [
                     "TypeName",
                     "TypeCode",
@@ -324,13 +279,13 @@ def execute():
                     if checkbox_state:
                         bim_type_codes_selected.append(bim_type_code)
                 
-                st.write("Selected BIMTypeCodes:")
+                st.markdown("##### Selected BIMTypeCodes")
                 st.write(pd.DataFrame({"BIMTypeCodes": bim_type_codes_selected}))
 
 
 
             with col2:
-                st.write("Create BIMTypeCodes in file")
+                st.markdown("#### Create BIMTypeCodes in file")
                 execute_button = st.button("Execute Property Creation")
 
             if execute_button:
@@ -338,7 +293,7 @@ def execute():
                 st.success("Property creation completed successfully!")
                 st.warning("Check your download folder for the updated file")
    
-            st.write(session["DataFrame"])
+            
 
 
         # ...
