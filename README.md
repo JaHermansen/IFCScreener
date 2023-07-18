@@ -2,7 +2,6 @@
 
 # IFC Screener ![Project Name](Images/paa1.png)
 
-
 This is a Streamlit application for analyzing and manipulating IFC (Industry Foundation Classes) files. The application provides various functionalities to explore and process the data contained in IFC files.
 
 ## Getting Started
@@ -12,6 +11,7 @@ To use the application, follow the steps below:
 1. Install the required dependencies mentioned in the `requirements.txt` file.
 2. Run the Streamlit application using the following command:
 
+streamlit run app.py
 
 
 ## Dependencies
@@ -25,6 +25,7 @@ The application requires the following dependencies:
 
 Install the dependencies using the following command:
 
+pip install -r requirements.txt
 
 
 ![Project Name](Images/Homepage.png)
@@ -33,8 +34,6 @@ Install the dependencies using the following command:
 
 1. Upload an IFC file by clicking on the "Upload file" button.
 2. Once the file is uploaded, you can explore the data, review quantities, create BIMTypeCodes, and add external data using the different tabs provided.
-
-![Project Name](Images/Quantities.png)
 
 ### Tab 1: DataFrame Utilities
 
@@ -51,6 +50,14 @@ This tab enables you to create BIMTypeCodes in the IFC file. You can specify the
 ### Tab 4: Add External Data
 
 This tab allows you to upload external data (in CSV, XLSX, or Pickle format) to associate with the IFC file. You can preview the uploaded data and add new properties to the IFC elements based on the uploaded data.
+
+![Project Name](Images/Quantities.png)
+
+## IFC Viewer
+
+The IFC Viewer allows you to visualize the IFC model in a separate page. You can view the 3D representation of the model, explore different elements, and interact with the model.
+
+![Project Name](Images/ViewerProp.png)
 
 ## Acknowledgements
 
