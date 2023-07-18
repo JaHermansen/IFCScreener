@@ -1,4 +1,4 @@
-![Project Name](Images/Homepage.png)
+![Project Name](Images/Viewer.png)
 
 # IFC Screener ![Project Name](Images/paa1.png)
 
@@ -26,13 +26,15 @@ The application requires the following dependencies:
 Install the dependencies using the following command:
 
 
-![Project Name](Images/Quantities.png)
 
+![Project Name](Images/Homepage.png)
 
 ## Usage
 
 1. Upload an IFC file by clicking on the "Upload file" button.
 2. Once the file is uploaded, you can explore the data, review quantities, create BIMTypeCodes, and add external data using the different tabs provided.
+
+![Project Name](Images/Quantities.png)
 
 ### Tab 1: DataFrame Utilities
 
