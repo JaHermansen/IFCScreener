@@ -1,4 +1,6 @@
-# IFC Screener ![Project Name](paa1.png)
+![Project Name](Images/Homepage.png)
+
+# IFC Screener ![Project Name](Images/paa1.png)
 
 
 This is a Streamlit application for analyzing and manipulating IFC (Industry Foundation Classes) files. The application provides various functionalities to explore and process the data contained in IFC files.
@@ -23,6 +25,8 @@ The application requires the following dependencies:
 
 Install the dependencies using the following command:
 
+
+![Project Name](Images/Quantities.png)
 
 
 ## Usage

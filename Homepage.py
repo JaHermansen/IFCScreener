@@ -6,7 +6,7 @@ from tools import graph_maker
 import datetime
 
 # Page icon
-icon = Image.open('paa1.png')
+icon = Image.open('Images\paa1.png')
 
 def callback_upload():
     st.session_state["file_name"] = st.session_state["uploaded_file"].name

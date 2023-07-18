@@ -13,7 +13,7 @@ from datetime import date
 
 
 #Page icon
-icon = Image.open('paa1.png')
+icon = Image.open('Images\paa1.png')
 
 st.set_page_config(
     layout= "wide",

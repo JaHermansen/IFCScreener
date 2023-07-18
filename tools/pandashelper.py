@@ -52,7 +52,7 @@ def download_excel(file_name, dataframe):
         for idx, col in enumerate(df_class):  # loop through all columns
             series = df_class[col]
             if "PAA" in col:
-                format = writer.book.add_format({'bg_color': '#ADD8E6'})  # define custom format (green fill color in this case)
+                format = writer.book.add_format({'bg_color': '#ADD8E6'}) 
                 # Create the cell range for the column
                 cell_range = xlsxwriter.utility.xl_range(1, idx, len(series), idx)
                 worksheet.conditional_format(cell_range, {'type': 'no_blanks', 'format': format})

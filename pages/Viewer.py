@@ -183,7 +183,7 @@ def write_health_data():
                 if inverse["int_value"]:
                     col3.button("Get Object", key=f'get_object_pop_button_inverse_{inverse["int_value"]}', on_click=get_object_data, args=(inverse["int_value"],))
             
-icon = Image.open('paa1.png')
+icon = Image.open('Images\paa1.png')
 
 def viewer():
     initialise_debug_props()
