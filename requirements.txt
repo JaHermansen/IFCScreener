@@ -3,7 +3,6 @@ plotly
 pillow
 streamlit
 matplotlib
-os
 datetime
 json
 pathlib
