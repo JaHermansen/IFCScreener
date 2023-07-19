@@ -301,7 +301,7 @@ def execute():
         with tab4:
             st.header("Upload data to model")
 
-            file = st.file_uploader("Upload file", type=['csv', 'xlsx', 'pickle'])
+            file = st.file_uploader(" ", type=['csv', 'xlsx', 'pickle'])
 
             if not file:
                 st.write("Upload a .csv, .xlsx, or .pickle file to get started")
