@@ -10,6 +10,7 @@ import ifcopenshell
 import ifcopenshell.util.element as Element
 import os
 from datetime import date
+from pathlib import Path
 
 
 #Page icon
@@ -107,7 +108,7 @@ def update_properties(bim_type_codes_selected):
         session.ifc_file.createIfcRelDefinesByProperties(proc.GlobalId, owner_history, None, None, [proc], property_set)
 
     # Write the modified IFC file to the Downloads folder
-    downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
+    downloads_path = str(Path.home() / "Downloads")
     updated_file_path = os.path.join(downloads_path, updated_file_name)
     session.ifc_file.write(updated_file_path)
 
@@ -141,7 +142,7 @@ def add_new_properties(new_properties_dict):
             session.ifc_file.createIfcRelDefinesByProperties(identifier, owner_history, None, None, [proc], property_set)
 
     # Write the modified IFC file to the Downloads folder
-    downloads_path = os.path.join(os.path.expanduser("~"), "Downloads")
+    downloads_path = str(Path.home() / "Downloads")
     updated_file_path = os.path.join(downloads_path, updated_file_name)
     session.ifc_file.write(updated_file_path)
 
