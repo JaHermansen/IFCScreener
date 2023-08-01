@@ -32,13 +32,16 @@ def get_project_coordinates(ifc_file):
     project = ifc_file.by_type("IfcSite")[0]
 
     if hasattr(project, "RefLatitude") and hasattr(project, "RefLongitude"):
-        latitude = project.RefLatitude
-        longitude = project.RefLongitude
-        elevation = getattr(project, "RefElevation", None)  # Optional elevation attribute
-        # Return the coordinates
-        return latitude, longitude, elevation
+        latitude_x, latitude_y, latitude_z, _ = project.RefLatitude
+        longitude_x, longitude_y, longitude_z, _ = project.RefLongitude
+
+        # Return the x, y, and z coordinates
+        return longitude_x, longitude_y, longitude_z, latitude_x, latitude_y, latitude_z
+
     # Return None if the coordinates are not found
     return None
+
+
 
 def count_ifc_products(ifc_file):
     project = ifc_file
@@ -101,11 +104,10 @@ def main():
                     st.write("Creation Date: " + str(creation_date))
                     coordinates = get_project_coordinates(st.session_state["ifc_file"])
                     if coordinates:
-                        latitude, longitude, elevation = coordinates
+                        longitude_x, longitude_y, longitude_z, latitude_x, latitude_y, latitude_z = coordinates
                         st.write("##### Project coordinates")
-                        st.write("Latitude: " + str(latitude))
-                        st.write("Longitude: " + str(longitude))
-                        st.write("Elevation: " + str(elevation))
+                        st.write("Latitude: " + str(latitude_x) + "° " + str(latitude_y) + "' " + str(latitude_z) + "''")
+                        st.write("Longitude: " + str(longitude_x) + "° " + str(longitude_y) + "' " + str(longitude_z) + "''")
                     product_count = count_ifc_products(st.session_state["ifc_file"])
                     st.write("##### IfcProducts")
                     st.write("IfcProducts entities: " + str(product_count))
