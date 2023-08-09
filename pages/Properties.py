@@ -191,17 +191,17 @@ def compare_datasets(df1, df2, identifier_column):
 
 
 def execute():
-    st.markdown("<h1 style='color: #006095;'>Model Quantities</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color: #006095;'>Model Properties</h1>", unsafe_allow_html=True)
     if st.session_state.get("ifc_file") is None:
         st.warning("No file provided. Please upload a file.")
     else:
         
-        tab1, tab2, tab3, tab4 = st.tabs(["Dataframe Utilities", "Quantities Review", "BIMTypeCodes", "Add External Data"])
+        tab1, tab2, tab3, tab4 = st.tabs(["Properties Overview", "Quantities Review", "BIMTypeCodes", "Add External Data"])
         
         with tab1:
 
             
-            st.header("DataFrame Review")
+            st.header("Properties Overview")
             st.write("Overall dataframe")
             session["DataFrame"] = get_ifc_pandas()
             st.write(session["DataFrame"])

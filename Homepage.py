@@ -42,7 +42,6 @@ def get_project_coordinates(ifc_file):
     return None
 
 
-
 def count_ifc_products(ifc_file):
     project = ifc_file
 
@@ -101,7 +100,7 @@ def main():
                     st.write("IFC schema: " + "".join(str(item) for item in st.session_state["ifc_file"].schema))
                     st.write(f"Project name: {get_project_name()}")
                     creation_date = get_file_creation_date(st.session_state["ifc_file"])
-                    st.write("Creation date: " + str(creation_date))
+                    st.write("Creation Date: " + str(creation_date))
                     coordinates = get_project_coordinates(st.session_state["ifc_file"])
                     if coordinates:
                         longitude_x, longitude_y, longitude_z, latitude_x, latitude_y, latitude_z = coordinates
