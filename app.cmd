@@ -11,7 +11,7 @@ echo       VV V       DDD DDD   CCCCC
 echo        VV        DDDDDD     CCCCC
 echo        VV        DDDDD       CCCCC
 
-echo   Welcome to PAA IFC Screener
+echo   Welcome to IFC Screener
 echo   ============================
 echo.
 echo The app is now running...
