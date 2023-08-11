@@ -146,9 +146,6 @@ def add_new_properties_old(new_properties_dict):
     updated_file_path = downloads_path.joinpath(updated_file_name)
     session.ifc_file.write(str(updated_file_path))
 
-
-
-
 def add_new_properties(new_properties_dict):
     owner_history = session.ifc_file.by_type("IfcOwnerHistory")[0]
     products = session.ifc_file.by_type("IfcProduct")
@@ -207,7 +204,6 @@ def add_new_properties(new_properties_dict):
     downloads_path = Path.home() / "Downloads"
     updated_file_path = downloads_path.joinpath(updated_file_name)
     session.ifc_file.write(str(updated_file_path))
-
 
 def find_sheet_with_class(sheet_names, ifc_building_element, file):
     for sheet_name in sheet_names:
@@ -297,6 +293,7 @@ def execute():
             st.write(session["DataFrame"])
 
             write_button = st.button("Download Excel", key="download_excel", on_click=download_excel)
+           
             if write_button:
                 st.success("Excel file creation completed!")
                 st.warning("Check your download folder")
