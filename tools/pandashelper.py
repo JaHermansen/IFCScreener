@@ -26,12 +26,13 @@ def download_csv(file_name, dataframe):
     dataframe.to_csv(f'./downloads/{file_name}')
 
 
+import os
+from pathlib import Path
+import pandas as pd
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill
+
 def download_excel(file_name, dataframe):
-        
-    import os
-    from pathlib import Path
-    import pandas as pd
-    import xlsxwriter
     file_name = file_name.replace('.ifc', '.xlsx')
 
     # Getting user's home directory and appending 'Downloads'
@@ -41,20 +42,19 @@ def download_excel(file_name, dataframe):
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
-    writer = pd.ExcelWriter(os.path.join(dir_name, file_name), engine="xlsxwriter") 
-
+    wb = Workbook()
     for object_class in dataframe[CLASS].unique():
         df_class = dataframe[dataframe[CLASS] == object_class].dropna(axis=1, how="all")
 
-        df_class.to_excel(writer, sheet_name=object_class, index=False)
-        worksheet = writer.sheets[object_class]  # pull worksheet object
+        sheet = wb.create_sheet(title=object_class)
+        for row in dataframe_to_rows(df_class, index=False, header=True):
+            sheet.append(row)
 
-        for idx, col in enumerate(df_class):  # loop through all columns
-            series = df_class[col]
+        for idx, col in enumerate(df_class.columns):
             if "PAA" in col:
-                format = writer.book.add_format({'bg_color': '#ADD8E6'}) 
-                # Create the cell range for the column
-                cell_range = xlsxwriter.utility.xl_range(1, idx, len(series), idx)
-                worksheet.conditional_format(cell_range, {'type': 'no_blanks', 'format': format})
+                fill = PatternFill(start_color="ADD8E6", end_color="ADD8E6", fill_type="solid")
+                col_letter = get_column_letter(idx + 1)
+                for row in range(2, sheet.max_row + 1):
+                    sheet[f"{col_letter}{row}"].fill = fill
 
-    writer.close()
+    wb.save(os.path.join(dir_name, file_name))
