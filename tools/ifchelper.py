@@ -249,22 +249,46 @@ def format_ifcjs_psets(ifcJSON):
                     "Name": quantity_name,
                     "Value": quantity_value
                 })
+
         if "HasProperties" in pset:
             for property in pset["HasProperties"]:
                 property_name = property["Name"]["value"]
                 property_value = ""
                 for key in property.keys():
                     if "Value" in key:
-                        property_value = property[key]["value"]
+                        if property[key] is not None and "value" in property[key]:
+                            property_value = property[key]["value"]
+                        else:
+                            print(f"Unexpected structure for property: {property}")
                 if pset["expressID"] not in pset_dict:
                     pset_dict[pset["expressID"]] = {
-                        "Name":pset["Name"]["value"], 
-                        "Data":[]
+                        "Name": pset["Name"]["value"], 
+                        "Data": []
                     }
                 pset_dict[pset["expressID"]]["Data"].append({
                     "Name": property_name,
                     "Value": property_value
                 })
+
+
+
+        # old
+#        if "HasProperties" in pset:
+ #           for property in pset["HasProperties"]:
+  #              property_name = property["Name"]["value"]
+   #             property_value = ""
+    #            for key in property.keys():
+     #               if "Value" in key:
+      #                  property_value = property[key]["value"]
+       #         if pset["expressID"] not in pset_dict:
+        #            pset_dict[pset["expressID"]] = {
+         #               "Name":pset["Name"]["value"], 
+          #              "Data":[]
+           #         }
+            #    pset_dict[pset["expressID"]]["Data"].append({
+             #       "Name": property_name,
+              #      "Value": property_value
+               # })
 
 
     return pset_dict

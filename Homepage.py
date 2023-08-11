@@ -101,12 +101,12 @@ def main():
                     st.write(f"Project name: {get_project_name()}")
                     creation_date = get_file_creation_date(st.session_state["ifc_file"])
                     st.write("Creation Date: " + str(creation_date))
-                    coordinates = get_project_coordinates(st.session_state["ifc_file"])
-                    if coordinates:
-                        longitude_x, longitude_y, longitude_z, latitude_x, latitude_y, latitude_z = coordinates
-                        st.write("##### Project coordinates")
-                        st.write("Latitude: " + str(latitude_x) + "° " + str(latitude_y) + "' " + str(latitude_z) + "''")
-                        st.write("Longitude: " + str(longitude_x) + "° " + str(longitude_y) + "' " + str(longitude_z) + "''")
+                    #coordinates = get_project_coordinates(st.session_state["ifc_file"])
+                    #if coordinates:
+                    #    longitude_x, longitude_y, longitude_z, latitude_x, latitude_y, latitude_z = coordinates
+                     #   st.write("##### Project coordinates")
+                      #  st.write("Latitude: " + str(latitude_x) + "° " + str(latitude_y) + "' " + str(latitude_z) + "''")
+                       # st.write("Longitude: " + str(longitude_x) + "° " + str(longitude_y) + "' " + str(longitude_z) + "''")
                     product_count = count_ifc_products(st.session_state["ifc_file"])
                     st.write("##### IfcProducts")
                     st.write("IfcProducts entities: " + str(product_count))

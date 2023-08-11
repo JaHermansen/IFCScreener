@@ -112,7 +112,7 @@ def update_properties(bim_type_codes_selected):
     updated_file_path = downloads_path.joinpath(updated_file_name)
     session.ifc_file.write(str(updated_file_path))
 
-def add_new_properties(new_properties_dict):
+def add_new_properties_old(new_properties_dict):
     owner_history = session.ifc_file.by_type("IfcOwnerHistory")[0]
     products = session.ifc_file.by_type("IfcProduct")
     procs = [i for i in products if i.is_a("IfcProduct")]
@@ -145,6 +145,69 @@ def add_new_properties(new_properties_dict):
     downloads_path = Path.home() / "Downloads"
     updated_file_path = downloads_path.joinpath(updated_file_name)
     session.ifc_file.write(str(updated_file_path))
+
+
+
+
+def add_new_properties(new_properties_dict):
+    owner_history = session.ifc_file.by_type("IfcOwnerHistory")[0]
+    products = session.ifc_file.by_type("IfcProduct")
+    procs = [i for i in products if i.is_a("IfcProduct")]
+
+    for proc in procs:
+        identifier = proc.GlobalId  # Get the GlobalId of the current product
+
+        if identifier in new_properties_dict:
+            element_properties = new_properties_dict[identifier]
+
+            for col, values in element_properties.items():
+                if "." in col:
+                    property_set_name, property_name = col.split(".", 1)
+                else:
+                    property_set_name = col
+                    property_name = col
+                
+                property_values = []
+                for value in values:
+                    existing_property = None
+                    for prop_set in proc.IsDefinedBy:
+                        if (
+                            prop_set.is_a("IfcRelDefinesByProperties")
+                            and prop_set.RelatingPropertyDefinition.Name == property_set_name
+                        ):
+                            for prop in prop_set.RelatingPropertyDefinition.HasProperties:
+                                if prop.Name == property_name:
+                                    existing_property = prop
+                                    break
+                            if existing_property:
+                                break
+
+                    if existing_property:
+                        # Update the existing property's value
+                        existing_property.NominalValue = session.ifc_file.create_entity("IfcText", str(value))
+                    else:
+                        # Create a new property
+                        property_values.append(
+                            session.ifc_file.createIfcPropertySingleValue(
+                                property_name, property_name,
+                                session.ifc_file.create_entity("IfcText", str(value)), None
+                            )
+                        )
+                
+                if property_values:
+                    property_set = session.ifc_file.createIfcPropertySet(
+                        identifier, owner_history, property_set_name, None, property_values
+                    )
+                    session.ifc_file.createIfcRelDefinesByProperties(
+                        identifier, owner_history, None, None, [proc], property_set
+                    )
+
+
+    # Write the modified IFC file to the Downloads folder
+    downloads_path = Path.home() / "Downloads"
+    updated_file_path = downloads_path.joinpath(updated_file_name)
+    session.ifc_file.write(str(updated_file_path))
+
 
 def find_sheet_with_class(sheet_names, ifc_building_element, file):
     for sheet_name in sheet_names:
@@ -190,6 +253,33 @@ def compare_datasets(df1, df2, identifier_column):
     return new_columns
 
 
+def compare_specific_values(df1, df2, specific_columns, identifier_column):
+    differing_values_dict = {}  # Dictionary to store differing values by GlobalId
+
+    common_columns = set(specific_columns).intersection(df1.columns).intersection(df2.columns)
+
+    for index, row1 in df1.iterrows():
+        global_id = row1[identifier_column]
+        row2 = df2[df2[identifier_column] == global_id]
+
+        if not row2.empty:
+            differing_props = {}
+            for col in common_columns:
+                col_name = col.split(".")[-1]
+                value1 = row1[col]
+                value2 = row2[col].iloc[0]
+
+                if value1 != value2:
+                    differing_props[col] = [value2]
+
+            if differing_props:
+                differing_values_dict[global_id] = differing_props
+
+    return differing_values_dict
+
+
+
+
 def execute():
     st.markdown("<h1 style='color: #006095;'>Model Properties</h1>", unsafe_allow_html=True)
     if st.session_state.get("ifc_file") is None:
@@ -206,7 +296,6 @@ def execute():
             session["DataFrame"] = get_ifc_pandas()
             st.write(session["DataFrame"])
 
-            #st.button("Download CSV", key="download_csv", on_click=download_csv)
             write_button = st.button("Download Excel", key="download_excel", on_click=download_excel)
             if write_button:
                 st.success("Excel file creation completed!")
@@ -241,7 +330,7 @@ def execute():
                     st.radio('Split per', ['Level', 'Type'], key="split_options")
                 else:
                     st.warning("No quantities ~ ask your file issuer to export some")
-                # st.write(session["qtos"])
+
             with col2:
                 st.markdown("#### Graph")
                 if "quantity_selector" in session:
@@ -325,27 +414,54 @@ def execute():
                         identifier_column = "GlobalId"
                         group_column = "Class"
                         new_columns = compare_datasets(data_preview, session["DataFrame"], identifier_column)
+                       
+                        # Update specific_columns to include all columns that start with "Pset_PAA"
+                        specific_columns = [
+                            col for col in data_preview.columns if col.startswith("Pset_PAA")
+                        ]
 
-                        if not list(new_columns):
-                            st.warning("No new columns found in the uploaded file.")
+
+                        differing_values_dict = compare_specific_values(session["DataFrame"], data_preview, specific_columns, identifier_column)
+                        new_properties_dict = {}  # Dictionary to store properties by GlobalId
+
+
+
+                        if not list(new_columns) and not list(differing_values_dict):
+                            st.warning("No new columns or differing values found in the uploaded file.")
                         else:
-                            # Store new properties for property creation
-                            new_properties_dict = {}  # Dictionary to store properties by GlobalId
-
                             grouped_properties = data_preview.groupby([group_column, identifier_column])
 
                             for (class_value, element), properties in grouped_properties:
                                 new_properties = properties[list(new_columns)].dropna(how="all", axis=1)
                                 if not new_properties.empty:
-                                    new_properties_dict[element] = new_properties.to_dict("list")
+                                    properties_dict = new_properties.to_dict("list")
+                                    properties_dict[group_column] = class_value  # Add the group column to the dictionary
+                                    new_properties_dict[element] = properties_dict
 
-                                    st.warning(f"IfcBuildingElement: {element} | Class: {class_value}")
-                                    for col in new_properties.columns:
-                                        values = new_properties[col].dropna().unique()
+                            for element, properties in differing_values_dict.items():
+                                if element in new_properties_dict:
+                                    for key, value in properties.items():
+                                        if key in new_properties_dict[element]:
+                                            new_properties_dict[element][key].extend(value)
+                                        else:
+                                            new_properties_dict[element][key] = value
+                                else:
+                                    new_properties_dict[element] = properties
+
+                            st.markdown("""---""")
+                            for element, properties in new_properties_dict.items():
+                                class_value = properties[group_column]
+                                st.warning(f"IfcBuildingElement: {element} | Class: {class_value}")
+                                for col, values in properties.items():
+                                    if col != group_column:
                                         for value in values:
                                             st.info(f"{col}: {value}")
 
-                    
+                        print("Complete dictionary of psets")
+                        print(new_properties_dict)
+
+
+
                     
                     with col2:
                         if not list(new_columns):

@@ -134,7 +134,10 @@ def write_pset_data():
         st.subheader("Object Properties")
         psets = format_ifc_js_psets(data['props'])
         for pset in psets.values():
-            st.subheader(pset["Name"])
+            property_name = pset["Name"]
+            cleaned_property_name = property_name.replace("Pset_", "")
+            st.subheader(cleaned_property_name)
+            #st.subheader(pset["Name"])
             st.table(pset["Data"])    
 
 def write_health_data():
@@ -192,36 +195,14 @@ def viewer():
         page_title="IFC Screener",
         page_icon=icon,
     )
-    #st.markdown("<h1 style='color: #006095;'>Viewer</h1>", unsafe_allow_html=True)
     if "ifc_file" in session and session["ifc_file"]:
         if "ifc_js_response" not in session:
             session["ifc_js_response"] = ""
         draw_3d_viewer()
         write_pset_data()
-        #col1, col2 = st.columns(2)
-        #with col1:
-            #st.markdown("Viewer")
-        #    draw_3d_viewer()
-       # with col2:
-            #st.markdown("Properties")
-           # write_pset_data()
     else:
         st.warning("No file provided. Please upload a file.")
     
-def execute():
-    initialise_debug_props()
-    st.header("Model Viewer")
-    if "ifc_file" in session and session["ifc_file"]:
-        if "ifc_js_response" not in session:
-            session["ifc_js_response"] = ""
-        draw_3d_viewer()
-        tab1, tab2 = st.tabs(["Properties", "Debugger"])
-        with tab1:
-            write_pset_data()
-        with tab2:
-            write_health_data()
-    else:
-        st.warning("No file provided. Please upload a file.")
 
 session = st.session_state
 viewer()
