@@ -32,8 +32,6 @@ def download_csv(file_name, dataframe):
 
 
 def download_excel(file_name, dataframe):
-        
-
     file_name = file_name.replace('.ifc', '.xlsx')
 
     # Getting user's home directory and appending 'Downloads'
