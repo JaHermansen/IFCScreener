@@ -332,9 +332,9 @@ def execute():
 
            # write_button = st.button("Download Excel", key="download_excel", on_click=download_excel)
            
-            if st.download_button:
-                st.success("Excel file creation completed!")
-                st.warning("Check your download folder")
+            #if st.download_button:
+            #    st.success("Excel file creation completed!")
+             #   st.warning("Check your download folder")
 
             st.header("Filter by class")
             classesfilter = session.DataFrame["Class"].value_counts().keys().to_list()
