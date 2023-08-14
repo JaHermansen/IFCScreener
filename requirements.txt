@@ -7,4 +7,3 @@ datetime
 pathlib
 xlsxwriter
 io
-openpyxl
