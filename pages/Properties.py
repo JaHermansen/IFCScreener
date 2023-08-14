@@ -532,7 +532,7 @@ def execute():
 
                             st.markdown("""---""")
                             for element, properties in new_properties_dict.items():
-                                st.write(class_value)
+                                st.write(properties)
                                 class_value = properties[group_column]
                                 st.warning(f"IfcBuildingElement: {element} | Class: {class_value}")
                                 for col, values in properties.items():
