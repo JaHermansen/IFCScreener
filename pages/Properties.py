@@ -13,6 +13,7 @@ import xlsxwriter
 from datetime import date
 from pathlib import Path
 import os
+import openpyxl
 
 
 #Page icon
