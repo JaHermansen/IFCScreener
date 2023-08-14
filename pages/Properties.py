@@ -14,6 +14,8 @@ from datetime import date
 from pathlib import Path
 import os
 from openpyxl import load_workbook
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill
 
 
 #Page icon
@@ -329,36 +331,32 @@ def execute():
             ### Pre-create dataframe for export
             output = BytesIO()
             dataframe = session["DataFrame"]
-
-            workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+            workbook = Workbook()
+            workbook.remove(workbook.active) # Remove the default sheet created
             CLASS = "Class"
 
             for object_class in dataframe[CLASS].unique():
                 df_class = dataframe[dataframe[CLASS] == object_class].dropna(axis=1, how="all")
                 
-                worksheet = workbook.add_worksheet(object_class)  # create worksheet with name 'object_class'
+                worksheet = workbook.create_sheet(title=object_class) # create worksheet with name 'object_class'
+
+                # Write the column headers
+                for c_idx, col_name in enumerate(df_class.columns):
+                    worksheet.cell(row=1, column=c_idx + 1, value=col_name)
 
                 for r_idx, row in enumerate(df_class.values):
                     for c_idx, value in enumerate(row):
-                        if isinstance(value, (int, float)): # check if the value is a number
-                            worksheet.write(r_idx + 1, c_idx, value) # +1 as headers are already written
-                        else:
-                            worksheet.write_string(r_idx + 1, c_idx, str(value)) # if not a number, write it as a string
+                        worksheet.cell(row=r_idx + 2, column=c_idx + 1, value=value) # +2 as headers are already written
 
-
-                for idx, col in enumerate(df_class):  # loop through all columns
+                for idx, col in enumerate(df_class): # loop through all columns
                     series = df_class[col]
                     if "PAA" in col:
-                        format = workbook.add_format({'bg_color': '#ADD8E6'})
-                        # Create the cell range for the column
-                        cell_range = xlsxwriter.utility.xl_range(1, idx, len(series), idx)
-                        worksheet.conditional_format(cell_range, {'type': 'no_blanks', 'format': format})
+                        fill = PatternFill(start_color="#ADD8E6", end_color="#ADD8E6", fill_type="solid")
+                        # Apply the format for the column
+                        for row_idx in range(2, len(series) + 2): # +2 as headers are already written
+                            worksheet.cell(row=row_idx, column=idx + 1).fill = fill
 
-            # Write the column headers
-            for c_idx, col_name in enumerate(df_class.columns):
-                worksheet.write(0, c_idx, col_name)
-
-            workbook.close()
+            workbook.save(output)
 
             st.download_button(
                 label="Download Excel workbook",
@@ -366,8 +364,7 @@ def execute():
                 file_name=original_file_name.replace('.ifc', '.xlsx'),
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
-
-           # write_button = st.button("Download Excel", key="download_excel", on_click=download_excel)
+                # write_button = st.button("Download Excel", key="download_excel", on_click=download_excel)
            
             #if st.download_button:
             #    st.success("Excel file creation completed!")
