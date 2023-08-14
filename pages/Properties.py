@@ -504,7 +504,7 @@ def execute():
                         differing_values_dict = compare_specific_values(session["DataFrame"], data_preview, specific_columns, identifier_column)
                         new_properties_dict = {}  # Dictionary to store properties by GlobalId
 
-
+                        st.write(differing_values_dict)
 
                         if not list(new_columns) and not list(differing_values_dict):
                             st.warning("No new columns or differing values found in the uploaded file.")
