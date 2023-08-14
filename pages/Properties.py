@@ -13,7 +13,7 @@ import xlsxwriter
 from datetime import date
 from pathlib import Path
 import os
-import openpyxl
+from openpyxl import load_workbook
 
 
 #Page icon
@@ -459,8 +459,10 @@ def execute():
                 st.write("Upload a .csv, .xlsx, or .pickle file to get started")
             else:
                 if file.type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-                    xls = pd.ExcelFile(file)
-                    sheet_names = xls.sheet_names
+                    xls = load_workbook(file, read_only=False)
+
+                    #xls = pd.ExcelFile(file)
+                    sheet_names = xls.sheetnames
 
                     col1, col2 = st.columns(2)
 
