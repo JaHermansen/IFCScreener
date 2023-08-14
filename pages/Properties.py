@@ -530,9 +530,6 @@ def execute():
                                 else:
                                     new_properties_dict[element] = properties
 
-                                st.write(properties)
-                                st.write(group_column)
-
                             st.markdown("""---""")
 
 
