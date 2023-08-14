@@ -6,5 +6,4 @@ matplotlib
 datetime
 pathlib
 xlsxwriter
-io
 openpyxl
