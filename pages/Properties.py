@@ -537,13 +537,15 @@ def execute():
 
 
                             for element, properties in new_properties_dict.items():
-
-                                class_value = properties[group_column]
-                                st.warning(f"IfcBuildingElement: {element} | Class: {class_value}")
-                                for col, values in properties.items():
-                                    if col != group_column:
-                                        for value in values:
-                                            st.info(f"{col}: {value}")
+                                try:
+                                    class_value = properties[group_column]
+                                    st.warning(f"IfcBuildingElement: {element} | Class: {class_value}")
+                                    for col, values in properties.items():
+                                        if col != group_column:
+                                            for value in values:
+                                                st.info(f"{col}: {value}")
+                                except KeyError:
+                                     st.error(f"'{group_column}' not found in properties for element {element}. Available keys: {properties.keys()}")
 
                         print("Complete dictionary of psets")
                         print(new_properties_dict)
