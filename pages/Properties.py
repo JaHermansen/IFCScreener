@@ -545,10 +545,10 @@ def execute():
                                             for value in values:
                                                 st.info(f"{col}: {value}")
                                 except KeyError:
-                                     st.error(f"'{group_column}' not found in properties for element {element}. Available keys: {properties.keys()}")
+                                     #st.error(f"'{group_column}' not found in properties for element {element}. Available keys: {properties.keys()}")
 
                         print("Complete dictionary of psets")
-                        print(new_properties_dict)
+                        st.write(new_properties_dict)
 
 
 
