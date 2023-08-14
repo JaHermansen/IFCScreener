@@ -298,6 +298,7 @@ def execute():
             dataframe = session["DataFrame"]
 
             workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+            CLASS = "Class"
 
             for object_class in dataframe[CLASS].unique():
                 df_class = dataframe[dataframe[CLASS] == object_class].dropna(axis=1, how="all")
