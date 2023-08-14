@@ -8,7 +8,8 @@ import pandas as pd
 from PIL import Image
 import ifcopenshell
 import ifcopenshell.util.element as Element
-import os
+from io import BytesIO
+import xlsxwriter
 from datetime import date
 from pathlib import Path
 
@@ -292,11 +293,49 @@ def execute():
             session["DataFrame"] = get_ifc_pandas()
             st.write(session["DataFrame"])
 
-            write_button = st.button("Download Excel", key="download_excel", on_click=download_excel)
+            #write_button = st.button("Download Excel", key="download_excel", on_click=download_excel)
            
-            if write_button:
-                st.success("Excel file creation completed!")
-                st.warning("Check your download folder")
+            #if write_button:
+             #   st.success("Excel file creation completed!")
+              #  st.warning("Check your download folder")
+
+            if st.button("Download Excel"):
+                file_name = st.session_state.get("ifc_file").name.replace('.ifc', '.xlsx')
+                dataframe = session["DataFrame"]
+                output = BytesIO()
+
+                workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+
+                for object_class in dataframe[CLASS].unique():
+                    df_class = dataframe[dataframe[CLASS] == object_class].dropna(axis=1, how="all")
+
+                    worksheet = workbook.add_worksheet(object_class)  # create worksheet with name 'object_class'
+
+                    for r_idx, row in enumerate(df_class.values):
+                        for c_idx, value in enumerate(row):
+                            worksheet.write(r_idx + 1, c_idx, value)  # +1 as headers are already written
+
+                    for idx, col in enumerate(df_class):  # loop through all columns
+                        series = df_class[col]
+                        if "PAA" in col:
+                            format = workbook.add_format({'bg_color': '#ADD8E6'})
+                            # Create the cell range for the column
+                            cell_range = xlsxwriter.utility.xl_range(1, idx, len(series), idx)
+                            worksheet.conditional_format(cell_range, {'type': 'no_blanks', 'format': format})
+
+                # Write the column headers
+                for c_idx, col_name in enumerate(df_class.columns):
+                    worksheet.write(0, c_idx, col_name)
+
+                workbook.close()
+
+                st.download_button(
+                    label="Download Excel workbook",
+                    data=output.getvalue(),
+                    file_name=file_name,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+
 
             st.header("Filter by class")
             classesfilter = session.DataFrame["Class"].value_counts().keys().to_list()
