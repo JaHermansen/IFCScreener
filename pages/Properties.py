@@ -535,18 +535,22 @@ def execute():
 
 
 
-
                             for element, properties in new_properties_dict.items():
                                 try:
                                     class_value = properties[group_column]
+                                    if pd.isna(class_value):  # Check if class_value is NaN
+                                        continue  # Skip this iteration if class_value is NaN
                                     st.warning(f"IfcBuildingElement: {element} | Class: {class_value}")
                                     for col, values in properties.items():
                                         if col != group_column:
                                             for value in values:
+                                                if pd.isna(value):  # Check if value is NaN
+                                                    continue  # Skip this iteration if value is NaN
                                                 st.info(f"{col}: {value}")
                                 except KeyError:
                                     pass
-                                     #st.error(f"'{group_column}' not found in properties for element {element}. Available keys: {properties.keys()}")
+                                    #st.error(f"'{group_column}' not found in properties for element {element}. Available keys: {properties.keys()}")
+
 
                         print("Complete dictionary of psets")
                         st.write(new_properties_dict)
