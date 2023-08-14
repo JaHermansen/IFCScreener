@@ -510,7 +510,10 @@ def execute():
                         else:
                             grouped_properties = data_preview.groupby([group_column, identifier_column])
 
+                            st.write(f"Grouped Properties: {grouped_properties}")
+
                             for (class_value, element), properties in grouped_properties:
+                                st.write(f"Properties for {element}: {properties}")
                                 new_properties = properties[list(new_columns)].dropna(how="all", axis=1)
                                 if not new_properties.empty:
                                     properties_dict = new_properties.to_dict("list")
