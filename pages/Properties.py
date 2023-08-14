@@ -12,6 +12,7 @@ from io import BytesIO
 import xlsxwriter
 from datetime import date
 from pathlib import Path
+import os
 
 
 #Page icon
@@ -113,10 +114,18 @@ def update_properties(bim_type_codes_selected):
     #updated_file_path = downloads_path.joinpath(updated_file_name)
     #session.ifc_file.write(str(updated_file_path))
 
-    # Write the modified IFC file to a BytesIO object
+    # Write the modified IFC file to a temporary file on disk
+    temp_file_path = "temp_updated_file.ifc"
+    session.ifc_file.write(temp_file_path)
+
+    # Read the file into a BytesIO object
     updated_file_bytes = BytesIO()
-    session.ifc_file.write(updated_file_bytes.name) # Assumes the write method expects a file path
+    with open(temp_file_path, 'rb') as f:
+        updated_file_bytes.write(f.read())
     updated_file_bytes.seek(0)
+
+    # Optional: Delete the temporary file if it's no longer needed
+    os.remove(temp_file_path)
 
     return updated_file_bytes
 
