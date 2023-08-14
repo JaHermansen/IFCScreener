@@ -220,9 +220,24 @@ def add_new_properties(new_properties_dict):
 
 
     # Write the modified IFC file to the Downloads folder
-    downloads_path = Path.home() / "Downloads"
-    updated_file_path = downloads_path.joinpath(updated_file_name)
-    session.ifc_file.write(str(updated_file_path))
+    #downloads_path = Path.home() / "Downloads"
+    #updated_file_path = downloads_path.joinpath(updated_file_name)
+    #session.ifc_file.write(str(updated_file_path))
+
+    # Write the modified IFC file to a temporary file on disk
+    tempo_file_path = "tempo_updated_file.ifc"
+    session.ifc_file.write(tempo_file_path)
+
+    # Read the file into a BytesIO object
+    updated_file = BytesIO()
+    with open(tempo_file_path, 'rb') as f:
+        updated_file.write(f.read())
+    updated_file.seek(0)
+
+    # Optional: Delete the temporary file if it's no longer needed
+    os.remove(tempo_file_path)
+
+    return updated_file
 
 def find_sheet_with_class(sheet_names, ifc_building_element, file):
     for sheet_name in sheet_names:
@@ -535,11 +550,18 @@ def execute():
 
                             if st.button(button_text):
                                 # Logic to handle the button click and add new properties
-                                add_new_properties(new_properties_dict)  # Call the function to add new properties
+                                updated_file_bytes = add_new_properties(new_properties_dict)  # Call the function to add new properties
 
                                 st.success("New properties added successfully.")
-
+                            
+                                st.download_button(
+                                    label="Download updated IFC file",
+                                    data=updated_file_bytes,
+                                    file_name=updated_file_name,  # Provide the appropriate name
+                                    mime="application/octet-stream"
+                                )
 
 
     
 execute()
+
