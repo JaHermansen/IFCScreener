@@ -510,7 +510,7 @@ def execute():
                         else:
                             grouped_properties = data_preview.groupby([group_column, identifier_column])
 
-                            st.write(f"Grouped Properties: {grouped_properties}")
+
 
                             for (class_value, element), properties in grouped_properties:
                                 st.write(f"Properties for {element}: {properties}")
