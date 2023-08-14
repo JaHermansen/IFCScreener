@@ -109,9 +109,17 @@ def update_properties(bim_type_codes_selected):
         session.ifc_file.createIfcRelDefinesByProperties(proc.GlobalId, owner_history, None, None, [proc], property_set)
 
     # Write the modified IFC file to the Downloads folder
-    downloads_path = Path.home() / "Downloads"
-    updated_file_path = downloads_path.joinpath(updated_file_name)
-    session.ifc_file.write(str(updated_file_path))
+    #downloads_path = Path.home() / "Downloads"
+    #updated_file_path = downloads_path.joinpath(updated_file_name)
+    #session.ifc_file.write(str(updated_file_path))
+
+    # Write the modified IFC file to a BytesIO object
+    updated_file_bytes = BytesIO()
+    session.ifc_file.write(updated_file_bytes.name) # Assumes the write method expects a file path
+    updated_file_bytes.seek(0)
+
+    return updated_file_bytes
+
 
 def add_new_properties_old(new_properties_dict):
     owner_history = session.ifc_file.by_type("IfcOwnerHistory")[0]
@@ -413,11 +421,20 @@ def execute():
                 st.markdown("#### Create BIMTypeCodes in file")
                 execute_button = st.button("Execute Property Creation")
 
-            if execute_button:
-                update_properties(bim_type_codes_selected)
-                st.success("Property creation completed successfully!")
-                st.warning("Check your download folder for the updated file")
+            #if execute_button:
+             #   update_properties(bim_type_codes_selected)
+              #  st.success("Property creation completed successfully!")
+               # st.warning("Check your download folder for the updated file")
    
+            if execute_button:
+                updated_file_bytes = update_properties(bim_type_codes_selected)
+                st.success("Property creation completed successfully!")
+                st.download_button(
+                    label="Download Updated IFC File",
+                    data=updated_file_bytes,
+                    file_name=updated_file_name,  # Provide the appropriate name
+                    mime="application/octet-stream"
+                )
             
 
 
