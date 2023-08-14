@@ -335,7 +335,7 @@ def execute():
 
             for object_class in dataframe[CLASS].unique():
                 df_class = dataframe[dataframe[CLASS] == object_class].dropna(axis=1, how="all")
-                st.write(df_class)
+                
                 worksheet = workbook.add_worksheet(object_class)  # create worksheet with name 'object_class'
 
                 for r_idx, row in enumerate(df_class.values):
