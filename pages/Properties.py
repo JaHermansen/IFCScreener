@@ -435,15 +435,15 @@ def execute():
               #  st.success("Property creation completed successfully!")
                # st.warning("Check your download folder for the updated file")
    
-            if execute_button:
-                updated_file_bytes = update_properties(bim_type_codes_selected)
-                st.success("Property creation completed successfully!")
-                st.download_button(
-                    label="Download Updated IFC File",
-                    data=updated_file_bytes,
-                    file_name=updated_file_name,  # Provide the appropriate name
-                    mime="application/octet-stream"
-                )
+                if execute_button:
+                    updated_file_bytes = update_properties(bim_type_codes_selected)
+                    st.success("Property creation completed successfully!")
+                    st.download_button(
+                        label="Download Updated IFC File",
+                        data=updated_file_bytes,
+                        file_name=updated_file_name,  # Provide the appropriate name
+                        mime="application/octet-stream"
+                    )
             
 
 
