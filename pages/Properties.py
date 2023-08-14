@@ -340,7 +340,7 @@ def execute():
 
                 for r_idx, row in enumerate(df_class.values):
                     for c_idx, value in enumerate(row):
-                        worksheet.write(r_idx + 1, c_idx, value)  # +1 as headers are already written
+                        worksheet.write(r_idx, c_idx, value)  # +1 as headers are already written
 
                 for idx, col in enumerate(df_class):  # loop through all columns
                     series = df_class[col]
