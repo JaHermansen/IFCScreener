@@ -428,7 +428,7 @@ def execute():
 
             with col2:
                 st.markdown("#### Create BIMTypeCodes in file")
-                execute_button = st.button("Execute Property Creation")
+                execute_button = st.button("Execute property creation")
 
             #if execute_button:
              #   update_properties(bim_type_codes_selected)
@@ -439,7 +439,7 @@ def execute():
                     updated_file_bytes = update_properties(bim_type_codes_selected)
                     st.success("Property creation completed successfully!")
                     st.download_button(
-                        label="Download Updated IFC File",
+                        label="Download updated IFC file",
                         data=updated_file_bytes,
                         file_name=updated_file_name,  # Provide the appropriate name
                         mime="application/octet-stream"
