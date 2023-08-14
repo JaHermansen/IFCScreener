@@ -505,15 +505,13 @@ def execute():
                         new_properties_dict = {}  # Dictionary to store properties by GlobalId
 
 
+
                         if not list(new_columns) and not list(differing_values_dict):
                             st.warning("No new columns or differing values found in the uploaded file.")
                         else:
                             grouped_properties = data_preview.groupby([group_column, identifier_column])
 
-
-
                             for (class_value, element), properties in grouped_properties:
-
                                 new_properties = properties[list(new_columns)].dropna(how="all", axis=1)
                                 if not new_properties.empty:
                                     properties_dict = new_properties.to_dict("list")
@@ -529,30 +527,19 @@ def execute():
                                             new_properties_dict[element][key] = value
                                 else:
                                     new_properties_dict[element] = properties
-
+                            
                             st.markdown("""---""")
 
-
-
                             for element, properties in new_properties_dict.items():
-                                try:
-                                    class_value = properties[group_column]
-                                    if pd.isna(class_value):  # Check if class_value is NaN
-                                        continue  # Skip this iteration if class_value is NaN
-                                    st.warning(f"IfcBuildingElement: {element} | Class: {class_value}")
-                                    for col, values in properties.items():
-                                        if col != group_column:
-                                            for value in values:
-                                                if pd.isna(value):  # Check if value is NaN
-                                                    continue  # Skip this iteration if value is NaN
-                                                st.info(f"{col}: {value}")
-                                except KeyError:
-                                    pass
-                                    #st.error(f"'{group_column}' not found in properties for element {element}. Available keys: {properties.keys()}")
-
+                                class_value = properties[group_column]
+                                st.warning(f"IfcBuildingElement: {element} | Class: {class_value}")
+                                for col, values in properties.items():
+                                    if col != group_column:
+                                        for value in values:
+                                            st.info(f"{col}: {value}")
 
                         print("Complete dictionary of psets")
-                        #st.write(new_properties_dict)
+                        print(new_properties_dict)
 
 
 
