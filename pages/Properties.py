@@ -513,7 +513,7 @@ def execute():
 
 
                             for (class_value, element), properties in grouped_properties:
-                                st.write(f"Properties for {element}: {properties}")
+
                                 new_properties = properties[list(new_columns)].dropna(how="all", axis=1)
                                 if not new_properties.empty:
                                     properties_dict = new_properties.to_dict("list")
@@ -532,6 +532,7 @@ def execute():
 
                             st.markdown("""---""")
                             for element, properties in new_properties_dict.items():
+                                st.write(class_value)
                                 class_value = properties[group_column]
                                 st.warning(f"IfcBuildingElement: {element} | Class: {class_value}")
                                 for col, values in properties.items():
