@@ -1,7 +1,9 @@
 import os
+from io import BytesIO
 from pathlib import Path
 import pandas as pd
 import xlsxwriter
+import streamlit as st
 
 
 CLASS = "Class"
@@ -32,29 +34,37 @@ def download_csv(file_name, dataframe):
 
 
 def download_excel(file_name, dataframe):
-    file_name = file_name.replace('.ifc', '.xlsx')
+    output = BytesIO()
 
-    # Getting user's home directory and appending 'Downloads'
-    dir_name = str(Path.home() / "Downloads")
-
-    # If directory does not exist, create it
-    if not os.path.exists(dir_name):
-        os.makedirs(dir_name)
-
-    writer = pd.ExcelWriter(os.path.join(dir_name, file_name), engine="xlsxwriter") 
+    workbook = xlsxwriter.Workbook(output, {'in_memory': True})
 
     for object_class in dataframe[CLASS].unique():
         df_class = dataframe[dataframe[CLASS] == object_class].dropna(axis=1, how="all")
 
-        df_class.to_excel(writer, sheet_name=object_class, index=False)
-        worksheet = writer.sheets[object_class]  # pull worksheet object
+        worksheet = workbook.add_worksheet(object_class)  # create worksheet with name 'object_class'
+
+        for r_idx, row in enumerate(df_class.values):
+            for c_idx, value in enumerate(row):
+                worksheet.write(r_idx + 1, c_idx, value)  # +1 as headers are already written
 
         for idx, col in enumerate(df_class):  # loop through all columns
             series = df_class[col]
             if "PAA" in col:
-                format = writer.book.add_format({'bg_color': '#ADD8E6'}) 
+                format = workbook.add_format({'bg_color': '#ADD8E6'})
                 # Create the cell range for the column
                 cell_range = xlsxwriter.utility.xl_range(1, idx, len(series), idx)
                 worksheet.conditional_format(cell_range, {'type': 'no_blanks', 'format': format})
 
-    writer.close()
+    # Write the column headers
+    for c_idx, col_name in enumerate(df_class.columns):
+        worksheet.write(0, c_idx, col_name)
+
+    workbook.close()
+
+    st.download_button(
+        label="Download Excel workbook",
+        data=output.getvalue(),
+        file_name=file_name.replace('.ifc', '.xlsx'),
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
