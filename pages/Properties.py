@@ -340,7 +340,11 @@ def execute():
 
                 for r_idx, row in enumerate(df_class.values):
                     for c_idx, value in enumerate(row):
-                        worksheet.write(r_idx + 1, c_idx, value)  # +1 as headers are already written
+                        if isinstance(value, (int, float)): # check if the value is a number
+                            worksheet.write(r_idx + 1, c_idx, value) # +1 as headers are already written
+                        else:
+                            worksheet.write_string(r_idx + 1, c_idx, str(value)) # if not a number, write it as a string
+
 
                 for idx, col in enumerate(df_class):  # loop through all columns
                     series = df_class[col]
