@@ -553,7 +553,7 @@ def execute():
 
 
                         print("Complete dictionary of psets")
-                        st.write(new_properties_dict)
+                        #st.write(new_properties_dict)
 
 
 
