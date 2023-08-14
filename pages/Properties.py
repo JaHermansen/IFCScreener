@@ -496,7 +496,7 @@ def execute():
                        
                         # Update specific_columns to include all columns that start with "Pset_PAA"
                         specific_columns = [
-                            col for col in data_preview.columns if "PAA" in col
+                            col for col in data_preview.columns if col.startswith("Pset_PAA")
                         ]
 
 
