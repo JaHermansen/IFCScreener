@@ -351,7 +351,7 @@ def execute():
                 for idx, col in enumerate(df_class): # loop through all columns
                     series = df_class[col]
                     if "PAA" in col:
-                        fill = PatternFill(start_color="#ADD8E6", end_color="#ADD8E6", fill_type="solid")
+                        fill = PatternFill(start_color="FFADD8E6", end_color="FFADD8E6", fill_type="solid") # Added "FF" for alpha channel
                         # Apply the format for the column
                         for row_idx in range(2, len(series) + 2): # +2 as headers are already written
                             worksheet.cell(row=row_idx, column=idx + 1).fill = fill
