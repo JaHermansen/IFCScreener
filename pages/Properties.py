@@ -546,7 +546,7 @@ def execute():
                         if not list(new_columns):
                             st.info("No new properties found in the uploaded file.")
                         else:
-                            button_text = "Add New Properties"
+                            button_text = "Add new properties"
 
                             if st.button(button_text):
                                 # Logic to handle the button click and add new properties
