@@ -1,6 +1,6 @@
 ![Project Name](Images/Viewer.png)
 
-# IFC Screener ![Project Name](Images/paa1.png)
+# IFC Screener ![Project Name]
 
 This is a Streamlit application for analyzing and manipulating IFC (Industry Foundation Classes) files. The application provides various functionalities to explore and process the data contained in IFC files.
 
