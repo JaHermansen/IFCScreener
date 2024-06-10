@@ -1,1 +1,9 @@
-
+ifcopenshell
+plotly
+pillow
+streamlit
+matplotlib
+datetime
+pathlib
+xlsxwriter
+openpyxl
