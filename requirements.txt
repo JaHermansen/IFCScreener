@@ -1,4 +1,4 @@
-pip install ifcopenshell
+ifcopenshell
 plotly
 pillow
 streamlit
